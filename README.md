@@ -10,15 +10,15 @@ Versi project ini telah diselaraskan dengan metodologi skripsi **“Optimasi Alg
 - Periode penelitian/demo default: **Tahun Ajaran 2025/2026**.
 - Tiga aspek utama: **Kerajinan, Kelakuan, Kerapian**.
 - Poin resmi diakumulasikan per aspek, lalu diskalakan menjadi:
-    - `Tidak Ada` = 0 poin
-    - `Ringan` = 1–4 poin
-    - `Sedang` = 5–15 poin
-    - `Berat` = 16 poin atau lebih
+  - `Tidak Ada` = 0 poin
+  - `Ringan` = 1–4 poin
+  - `Sedang` = 5–15 poin
+  - `Berat` = 16 poin atau lebih
 - Information Gain dihitung pada data training untuk meranking tiga aspek dan memilih fitur yang informatif.
 - Kelas target:
-    - **Baik**
-    - **Butuh Perhatian**
-    - **Bermasalah**
+  - **Baik**
+  - **Butuh Perhatian**
+  - **Bermasalah**
 - Pembagian data wajib **70% training : 30% testing** dengan stratified split dan random seed `42`.
 - Evaluasi menghasilkan **Accuracy, Precision, Recall, F1-Score**, serta **Confusion Matrix 3×3**.
 - Sistem menyimpan hasil Naive Bayes murni dan Naive Bayes + Information Gain agar peningkatan performa dapat dibandingkan.
@@ -26,12 +26,12 @@ Versi project ini telah diselaraskan dengan metodologi skripsi **“Optimasi Alg
 
 ## Hak Akses Pengguna
 
-| Role                                  | Hak akses utama                                                                                                                                                                                                          |
-| ------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| **Guru BK / `super_admin`**           | Akses penuh; kelola kelas, siswa, jenis pelanggaran, akun, label aktual; catat/ubah/hapus pelanggaran; setujui/tolak laporan OSIS; kelola penanganan; jalankan klasifikasi; lihat IG/evaluasi; export laporan PDF/Excel. |
-| **OSIS / `admin`**                    | Lihat data siswa; ajukan laporan pelanggaran milik akun sendiri; perbaiki laporan yang ditolak; lihat hasil klasifikasi; lihat dan mencatat penanganan pada pelanggaran resmi.                                           |
-| **Kepala Sekolah / `kepala_sekolah`** | Read-only untuk data siswa, pelanggaran resmi, penanganan, klasifikasi, Information Gain, evaluasi model; dapat export laporan PDF/Excel.                                                                                |
-| **Wali Murid / `wali_murid`**         | Hanya melihat pelanggaran resmi, hasil klasifikasi, dan riwayat penanganan **anak yang terhubung dengan akun wali**.                                                                                                     |
+| Role | Hak akses utama |
+|---|---|
+| **Guru BK / `super_admin`** | Akses penuh; kelola kelas, siswa, jenis pelanggaran, akun, label aktual; catat/ubah/hapus pelanggaran; setujui/tolak laporan OSIS; kelola penanganan; jalankan klasifikasi; lihat IG/evaluasi; export laporan PDF/Excel. |
+| **OSIS / `admin`** | Lihat data siswa; ajukan laporan pelanggaran milik akun sendiri; perbaiki laporan yang ditolak; lihat hasil klasifikasi; lihat dan mencatat penanganan pada pelanggaran resmi. |
+| **Kepala Sekolah / `kepala_sekolah`** | Read-only untuk data siswa, pelanggaran resmi, penanganan, klasifikasi, Information Gain, evaluasi model; dapat export laporan PDF/Excel. |
+| **Wali Murid / `wali_murid`** | Hanya melihat pelanggaran resmi, hasil klasifikasi, dan riwayat penanganan **anak yang terhubung dengan akun wali**. |
 
 ## Fitur Utama
 
@@ -110,12 +110,12 @@ Semua akun demo menggunakan password yang sama:
 password1234
 ```
 
-| Pengguna       | Email                     | Role             |
-| -------------- | ------------------------- | ---------------- |
-| Guru BK        | `gurubk@gmail.com`        | `super_admin`    |
-| Pengurus OSIS  | `osis@gmail.com`          | `admin`          |
+| Pengguna | Email | Role |
+|---|---|---|
+| Guru BK | `gurubk@gmail.com` | `super_admin` |
+| Pengurus OSIS | `osis@gmail.com` | `admin` |
 | Kepala Sekolah | `kepalasekolah@gmail.com` | `kepala_sekolah` |
-| Wali Murid     | `walimurid@gmail.com`     | `wali_murid`     |
+| Wali Murid | `walimurid@gmail.com` | `wali_murid` |
 
 Untuk penggunaan nyata, ubah password setiap akun setelah demo.
 
@@ -192,11 +192,11 @@ Laravel mengirim JSON melalui stdin dan menerima hasil JSON melalui stdout. Tida
 7. Buka menu **Klasifikasi**.
 8. Pilih Tahun Ajaran dan Semester, kemudian jalankan **Proses Naive Bayes + Information Gain**.
 9. Periksa:
-    - hasil klasifikasi;
-    - ranking Information Gain;
-    - perbandingan baseline vs optimized;
-    - Accuracy, Precision, Recall, F1-Score;
-    - Confusion Matrix.
+   - hasil klasifikasi;
+   - ranking Information Gain;
+   - perbandingan baseline vs optimized;
+   - Accuracy, Precision, Recall, F1-Score;
+   - Confusion Matrix.
 10. Gunakan menu **Laporan Pelanggaran → Export Laporan** untuk PDF/Excel.
 
 ## Validasi Setelah Update
