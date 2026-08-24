@@ -1,39 +1,39 @@
 # Sistem Monitoring Bimbingan Konseling SMP Frater Makassar
 
-Aplikasi web berbasis Laravel + Filament untuk digitalisasi pencatatan pelanggaran, validasi Guru BK, penanganan kasus, monitoring orang tua, serta klasifikasi perilaku siswa menggunakan **Naive Bayes yang dioptimasi dengan Information Gain**.
+Aplikasi web berbasis **Laravel + Filament** untuk digitalisasi pencatatan pelanggaran, validasi Guru BK, penanganan kasus, monitoring orang tua, serta klasifikasi perilaku siswa menggunakan **Naive Bayes yang dioptimasi dengan Information Gain**.
 
 Versi project ini telah diselaraskan dengan metodologi skripsi **“Optimasi Algoritma Naïve Bayes Menggunakan Information Gain untuk Klasifikasi Perilaku Siswa dalam Sistem Monitoring Bimbingan Konseling di SMP Frater Makassar.”**
 
-## Metodologi yang diterapkan
+## Metodologi yang Diterapkan
 
 - Data klasifikasi hanya menggunakan **pelanggaran yang sudah disetujui Guru BK**.
 - Periode penelitian/demo default: **Tahun Ajaran 2025/2026**.
 - Tiga aspek utama: **Kerajinan, Kelakuan, Kerapian**.
 - Poin resmi diakumulasikan per aspek, lalu diskalakan menjadi:
-    - `Tidak Ada` = 0 poin
-    - `Ringan` = 1–4 poin
-    - `Sedang` = 5–15 poin
-    - `Berat` = 16 poin atau lebih
+  - `Tidak Ada` = 0 poin
+  - `Ringan` = 1–4 poin
+  - `Sedang` = 5–15 poin
+  - `Berat` = 16 poin atau lebih
 - Information Gain dihitung pada data training untuk meranking tiga aspek dan memilih fitur yang informatif.
 - Kelas target:
-    - **Baik**
-    - **Butuh Perhatian**
-    - **Bermasalah**
+  - **Baik**
+  - **Butuh Perhatian**
+  - **Bermasalah**
 - Pembagian data wajib **70% training : 30% testing** dengan stratified split dan random seed `42`.
 - Evaluasi menghasilkan **Accuracy, Precision, Recall, F1-Score**, serta **Confusion Matrix 3×3**.
 - Sistem menyimpan hasil Naive Bayes murni dan Naive Bayes + Information Gain agar peningkatan performa dapat dibandingkan.
 - Model probabilitas hasil training disimpan sebagai **knowledge model** di tabel `naive_bayes_models`; pelanggaran resmi baru memakai model tersimpan untuk prediksi real-time tanpa mengulang evaluasi 70:30.
 
-## Hak akses pengguna
+## Hak Akses Pengguna
 
-| Role                                  | Hak akses utama                                                                                                                                                                                                          |
-| ------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| **Guru BK / `super_admin`**           | Akses penuh; kelola kelas, siswa, jenis pelanggaran, akun, label aktual; catat/ubah/hapus pelanggaran; setujui/tolak laporan OSIS; kelola penanganan; jalankan klasifikasi; lihat IG/evaluasi; export laporan PDF/Excel. |
-| **OSIS / `admin`**                    | Lihat data siswa; ajukan laporan pelanggaran milik akun sendiri; perbaiki laporan yang ditolak; lihat hasil klasifikasi; lihat dan mencatat penanganan pada pelanggaran resmi.                                           |
-| **Kepala Sekolah / `kepala_sekolah`** | Read-only untuk data siswa, pelanggaran resmi, penanganan, klasifikasi, Information Gain, evaluasi model; dapat export laporan PDF/Excel.                                                                                |
-| **Wali Murid / `wali_murid`**         | Hanya melihat pelanggaran resmi, hasil klasifikasi, dan riwayat penanganan **anak yang terhubung dengan akun wali**.                                                                                                     |
+| Role | Hak akses utama |
+|---|---|
+| **Guru BK / `super_admin`** | Akses penuh; kelola kelas, siswa, jenis pelanggaran, akun, label aktual; catat/ubah/hapus pelanggaran; setujui/tolak laporan OSIS; kelola penanganan; jalankan klasifikasi; lihat IG/evaluasi; export laporan PDF/Excel. |
+| **OSIS / `admin`** | Lihat data siswa; ajukan laporan pelanggaran milik akun sendiri; perbaiki laporan yang ditolak; lihat hasil klasifikasi; lihat dan mencatat penanganan pada pelanggaran resmi. |
+| **Kepala Sekolah / `kepala_sekolah`** | Read-only untuk data siswa, pelanggaran resmi, penanganan, klasifikasi, Information Gain, evaluasi model; dapat export laporan PDF/Excel. |
+| **Wali Murid / `wali_murid`** | Hanya melihat pelanggaran resmi, hasil klasifikasi, dan riwayat penanganan **anak yang terhubung dengan akun wali**. |
 
-## Fitur utama
+## Fitur Utama
 
 1. Login multi-role menggunakan Filament.
 2. Master kelas, siswa, jenis pelanggaran, dan pengguna.
@@ -51,7 +51,7 @@ Versi project ini telah diselaraskan dengan metodologi skripsi **“Optimasi Alg
 14. Dashboard berbeda sesuai role, termasuk dashboard terbatas Wali Murid.
 15. Export laporan pelanggaran resmi ke **PDF** atau **Excel (.xls)** per periode, kelas, atau siswa.
 
-## Persyaratan aplikasi
+## Persyaratan Aplikasi
 
 Project saat ini menggunakan dependency aktual berikut:
 
@@ -65,7 +65,7 @@ Project saat ini menggunakan dependency aktual berikut:
 
 > Catatan: jangan menurunkan PHP project ini ke PHP 8.1 tanpa sekaligus menurunkan Laravel/Filament karena dependency project saat ini membutuhkan PHP yang lebih baru.
 
-## Instalasi baru
+## Instalasi Baru
 
 ```bash
 composer install
@@ -102,7 +102,7 @@ Buka:
 http://127.0.0.1:8000/admin
 ```
 
-## Akun demo
+## Akun Demo
 
 Semua akun demo menggunakan password yang sama:
 
@@ -110,16 +110,16 @@ Semua akun demo menggunakan password yang sama:
 password1234
 ```
 
-| Pengguna       | Email                     | Role             |
-| -------------- | ------------------------- | ---------------- |
-| Guru BK        | `gurubk@gmail.com`        | `super_admin`    |
-| Pengurus OSIS  | `osis@gmail.com`          | `admin`          |
+| Pengguna | Email | Role |
+|---|---|---|
+| Guru BK | `gurubk@gmail.com` | `super_admin` |
+| Pengurus OSIS | `osis@gmail.com` | `admin` |
 | Kepala Sekolah | `kepalasekolah@gmail.com` | `kepala_sekolah` |
-| Wali Murid     | `walimurid@gmail.com`     | `wali_murid`     |
+| Wali Murid | `walimurid@gmail.com` | `wali_murid` |
 
 Untuk penggunaan nyata, ubah password setiap akun setelah demo.
 
-## Cara memperbarui project/database lama
+## Cara Memperbarui Project/Database Lama
 
 Sebelum migrasi, **backup database MySQL terlebih dahulu**.
 
@@ -153,7 +153,7 @@ php artisan db:seed --class=UserSeeder
 
 Jangan menjalankan full `php artisan db:seed` pada database penelitian yang sudah berisi data asli kecuali memang ingin menambahkan data demo.
 
-## Menjalankan engine Python
+## Menjalankan Engine Python
 
 Cek Python:
 
@@ -181,7 +181,7 @@ python/naive_bayes_ig.py
 
 Laravel mengirim JSON melalui stdin dan menerima hasil JSON melalui stdout. Tidak ada package machine-learning Python eksternal yang wajib dipasang karena implementasi Entropy, Information Gain, Naive Bayes, split 70:30, dan Confusion Matrix menggunakan Python standard library.
 
-## Urutan penggunaan penelitian
+## Urutan Penggunaan Penelitian
 
 1. Login sebagai Guru BK.
 2. Pastikan data kelas, siswa, dan jenis pelanggaran sudah benar.
@@ -192,14 +192,14 @@ Laravel mengirim JSON melalui stdin dan menerima hasil JSON melalui stdout. Tida
 7. Buka menu **Klasifikasi**.
 8. Pilih Tahun Ajaran dan Semester, kemudian jalankan **Proses Naive Bayes + Information Gain**.
 9. Periksa:
-    - hasil klasifikasi;
-    - ranking Information Gain;
-    - perbandingan baseline vs optimized;
-    - Accuracy, Precision, Recall, F1-Score;
-    - Confusion Matrix.
+   - hasil klasifikasi;
+   - ranking Information Gain;
+   - perbandingan baseline vs optimized;
+   - Accuracy, Precision, Recall, F1-Score;
+   - Confusion Matrix.
 10. Gunakan menu **Laporan Pelanggaran → Export Laporan** untuk PDF/Excel.
 
-## Validasi setelah update
+## Validasi Setelah Update
 
 ```bash
 php artisan migrate:status
@@ -214,7 +214,7 @@ Kemudian login dengan keempat role dan pastikan:
 - Kepala Sekolah bersifat read-only dan memiliki export laporan.
 - Wali Murid tidak dapat melihat data siswa lain.
 
-## Struktur penting
+## Struktur Penting
 
 ```text
 app/
@@ -236,7 +236,6 @@ python/
 └── naive_bayes_ig.py
 ```
 
-## Catatan data penelitian
+## Catatan Data Penelitian
 
 Seeder hanya disediakan untuk **demo aplikasi**. Dataset penelitian 500 rekam pelanggaran harus berasal dari data resmi SMP Frater Makassar dan tidak dibuat/fabrikasi oleh aplikasi.
-# sistem-monitoring-bk-naive-bayes-information-gain
