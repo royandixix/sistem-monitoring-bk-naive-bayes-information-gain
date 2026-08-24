@@ -239,3 +239,4 @@ python/
 ## Catatan Data Penelitian
 
 Seeder hanya disediakan untuk **demo aplikasi**. Dataset penelitian 500 rekam pelanggaran harus berasal dari data resmi SMP Frater Makassar dan tidak dibuat/fabrikasi oleh aplikasi.
+# optimasi-tiket-ferry-fcfs-greedy
