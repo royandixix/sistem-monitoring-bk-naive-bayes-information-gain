@@ -8,7 +8,7 @@ use Filament\Widgets\ChartWidget;
 class KlasifikasiHasilChart extends ChartWidget
 {
     protected ?string $heading =
-        'Distribusi Label Aktual dan Hasil Klasifikasi';
+        'Distribusi Hasil Klasifikasi Perilaku Siswa';
 
     protected ?string $pollingInterval =
         '10s';
@@ -16,7 +16,7 @@ class KlasifikasiHasilChart extends ChartWidget
     protected int|string|array $columnSpan =
         1;
 
-    public ?string $filter = 'aktual';
+    public ?string $filter = 'ig';
 
     public static function canView(): bool
     {
@@ -31,9 +31,6 @@ class KlasifikasiHasilChart extends ChartWidget
     protected function getFilters(): ?array
     {
         return [
-            'aktual' =>
-                'Label Aktual Dataset',
-
             'ig' =>
                 'Naive Bayes + Information Gain',
 
@@ -48,9 +45,6 @@ class KlasifikasiHasilChart extends ChartWidget
     protected function getData(): array
     {
         $column = match ($this->filter) {
-            'aktual' =>
-                'label_aktual',
-
             'nb' =>
                 'hasil_naive_bayes',
 
@@ -73,8 +67,7 @@ class KlasifikasiHasilChart extends ChartWidget
                 ->first();
 
         $query =
-            Klasifikasi::query()
-                ->where('jumlah_pelanggaran', '>', 0);
+            Klasifikasi::query();
 
         if ($latest?->tahun_ajaran) {
             $query

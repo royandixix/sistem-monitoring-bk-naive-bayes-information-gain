@@ -54,19 +54,7 @@ class ConfusionMatrixWidget extends Widget
                 );
         }
 
-        $experimental = EvaluasiModel::query()
-            ->where(
-                'metode',
-                'Naive Bayes + Information Gain - Eksperimen CSV'
-            )
-            ->where('tahun_ajaran', '2025/2026')
-            ->where('semester', 'Ganjil')
-            ->latest()
-            ->first();
-
         return [
-            'experimental' => $experimental,
-
             'baseline' =>
                 $baselineQuery
                     ->latest()

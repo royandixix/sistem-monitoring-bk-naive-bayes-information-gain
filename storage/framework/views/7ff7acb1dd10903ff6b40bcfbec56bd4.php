@@ -43,7 +43,7 @@
                 'filament.partials.confusion-matrix-detail',
                 [
                     'record' => $baseline,
-                    'title' => 'Naïve Bayes Baseline',
+                    'title' => '1. Naïve Bayes Baseline',
                 ]
             , array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
 
@@ -52,7 +52,7 @@
                 [
                     'record' => $optimized,
                     'title' =>
-                        'Naïve Bayes + Information Gain',
+                        '2. Naïve Bayes + Information Gain',
                 ]
             , array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
 
@@ -131,7 +131,7 @@
                             font-size:17px;
                             font-weight:900;
                         ">
-                            Perbandingan Akhir Kedua Model
+                            3. Perbandingan Model Utama
                         </div>
 
                         <div style="
@@ -412,6 +412,47 @@
                     </div>
 
                 </div>
+
+            <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+
+
+            <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($experimental): ?>
+
+                <div style="
+                    padding:16px 18px;
+                    border:1px solid rgba(59,130,246,.35);
+                    border-radius:14px;
+                    background:rgba(59,130,246,.08);
+                    line-height:1.7;
+                ">
+                    <div style="
+                        font-size:16px;
+                        font-weight:900;
+                    ">
+                        4. Eksperimen Dataset CSV
+                    </div>
+
+                    <div style="
+                        font-size:12px;
+                        opacity:.75;
+                        margin-top:4px;
+                    ">
+                        Hasil ini berasal dari pengujian
+                        Naive Bayes + Information Gain
+                        menggunakan fitur Dataset CSV
+                        dengan 421 sampel, pembagian
+                        70:30, dan random seed 42.
+                    </div>
+                </div>
+
+                <?php echo $__env->make(
+                    'filament.partials.confusion-matrix-detail',
+                    [
+                        'record' => $experimental,
+                        'title' =>
+                            'Naïve Bayes + Information Gain – Eksperimen Dataset CSV',
+                    ]
+                , array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
 
             <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
 

@@ -196,15 +196,8 @@
         ?? 'Model'
     );
 
-    $isExperimental =
-        str_contains(
-            strtolower($methodName),
-            'eksperimen csv'
-        );
-
     $isOptimized =
-        ! $isExperimental
-        && str_contains(
+        str_contains(
             strtolower($methodName),
             'information gain'
         );

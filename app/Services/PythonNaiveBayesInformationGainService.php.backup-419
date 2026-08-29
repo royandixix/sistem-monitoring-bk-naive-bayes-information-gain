@@ -533,10 +533,6 @@ class PythonNaiveBayesInformationGainService
                         $label,
                 ];
             })
-            ->filter(
-                fn (array $sample): bool =>
-                    (int) ($sample['jumlah_pelanggaran'] ?? 0) > 0
-            )
             ->values();
     }
 

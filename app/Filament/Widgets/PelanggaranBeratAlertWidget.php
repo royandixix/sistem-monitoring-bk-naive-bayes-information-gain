@@ -2,7 +2,7 @@
 
 namespace App\Filament\Widgets;
 
-use App\Models\Pelanggaran;
+use App\Models\Klasifikasi;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Filament\Widgets\TableWidget;
@@ -26,26 +26,31 @@ class PelanggaranBeratAlertWidget extends TableWidget
 
     public function table(Table $table): Table
     {
-        $query = Pelanggaran::query()
+        $latest = Klasifikasi::query()
+            ->latest('updated_at')
+            ->first([
+                'tahun_ajaran',
+                'semester',
+            ]);
+
+        $query = Klasifikasi::query()
             ->with([
                 'siswa.kelas',
-                'jenisPelanggaran',
             ])
-            ->where(
-                'status_pengajuan',
-                Pelanggaran::STATUS_DISETUJUI
+            ->when(
+                $latest,
+                fn (Builder $query) => $query
+                    ->where('tahun_ajaran', $latest->tahun_ajaran)
+                    ->where('semester', $latest->semester)
             )
-            ->whereHas(
-                'jenisPelanggaran',
-                function (Builder $query): void {
-                    $query->where(function (Builder $query): void {
-                        $query
-                            ->where('tingkat_pelanggaran', 'Berat')
-                            ->orWhere('poin', '>', 15);
-                    });
-                }
-            )
-            ->latest('tanggal');
+            ->where(function (Builder $query): void {
+                $query
+                    ->where('fitur_klasifikasi->kerajinan_kategori', 'Berat')
+                    ->orWhere('fitur_klasifikasi->kelakuan_kategori', 'Berat')
+                    ->orWhere('fitur_klasifikasi->kerapian_kategori', 'Berat');
+            })
+            ->orderByDesc('total_poin')
+            ->orderByDesc('jumlah_pelanggaran');
 
         return $table
             ->query($query)
@@ -65,33 +70,51 @@ class PelanggaranBeratAlertWidget extends TableWidget
                     ->color('gray')
                     ->placeholder('-'),
 
-                TextColumn::make('jenisPelanggaran.nama_jenis')
-                    ->label('Pelanggaran')
-                    ->wrap(),
-
-                TextColumn::make('jenisPelanggaran.aspek_pelanggaran')
-                    ->label('Aspek')
+                TextColumn::make('jumlah_pelanggaran')
+                    ->label('Jumlah Pelanggaran')
                     ->badge()
-                    ->color('info'),
-
-                TextColumn::make('jenisPelanggaran.poin')
-                    ->label('Poin')
-                    ->badge()
-                    ->color('danger')
-                    ->suffix(' poin'),
-
-                TextColumn::make('jenisPelanggaran.tingkat_pelanggaran')
-                    ->label('Tingkat')
-                    ->badge()
-                    ->color('danger')
-                    ->formatStateUsing(
-                        fn (?string $state): string => $state ?: 'Berat'
-                    ),
-
-                TextColumn::make('tanggal')
-                    ->label('Tanggal')
-                    ->date('d M Y')
+                    ->color('warning')
                     ->sortable(),
+
+                TextColumn::make('total_poin')
+                    ->label('Total Poin')
+                    ->badge()
+                    ->color('danger')
+                    ->suffix(' poin')
+                    ->sortable(),
+
+                TextColumn::make('aspek_berat')
+                    ->label('Aspek Berat')
+                    ->badge()
+                    ->color('danger')
+                    ->state(function (Klasifikasi $record): string {
+                        $fitur = $record->fitur_klasifikasi ?? [];
+                        $aspek = [];
+
+                        if (($fitur['kerajinan_kategori'] ?? null) === 'Berat') {
+                            $aspek[] = 'Kerajinan';
+                        }
+
+                        if (($fitur['kelakuan_kategori'] ?? null) === 'Berat') {
+                            $aspek[] = 'Kelakuan';
+                        }
+
+                        if (($fitur['kerapian_kategori'] ?? null) === 'Berat') {
+                            $aspek[] = 'Kerapian';
+                        }
+
+                        return implode(', ', $aspek) ?: '-';
+                    }),
+
+                TextColumn::make('label_aktual')
+                    ->label('Label Aktual')
+                    ->badge()
+                    ->color(fn (?string $state): string => match ($state) {
+                        'Baik' => 'success',
+                        'Butuh Perhatian' => 'warning',
+                        'Bermasalah' => 'danger',
+                        default => 'gray',
+                    }),
 
                 TextColumn::make('semester')
                     ->label('Semester')
@@ -103,9 +126,9 @@ class PelanggaranBeratAlertWidget extends TableWidget
             ])
             ->striped()
             ->defaultPaginationPageOption(5)
-            ->emptyStateHeading('Tidak ada pelanggaran berat')
+            ->emptyStateHeading('Tidak ada akumulasi pelanggaran berat')
             ->emptyStateDescription(
-                'Belum terdapat pelanggaran berat yang telah disetujui Guru BK.'
+                'Belum terdapat siswa dengan kategori Berat pada aspek Kerajinan, Kelakuan, atau Kerapian.'
             );
     }
 }

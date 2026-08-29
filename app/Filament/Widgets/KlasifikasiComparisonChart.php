@@ -40,7 +40,8 @@ class KlasifikasiComparisonChart extends ChartWidget
                 ->first();
 
         $baseQuery =
-            Klasifikasi::query();
+            Klasifikasi::query()
+                ->where('jumlah_pelanggaran', '>', 0);
 
         if ($latest?->tahun_ajaran) {
             $baseQuery

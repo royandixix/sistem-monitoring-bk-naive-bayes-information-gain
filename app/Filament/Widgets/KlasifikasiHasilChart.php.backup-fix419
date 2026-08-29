@@ -73,8 +73,7 @@ class KlasifikasiHasilChart extends ChartWidget
                 ->first();
 
         $query =
-            Klasifikasi::query()
-                ->where('jumlah_pelanggaran', '>', 0);
+            Klasifikasi::query();
 
         if ($latest?->tahun_ajaran) {
             $query

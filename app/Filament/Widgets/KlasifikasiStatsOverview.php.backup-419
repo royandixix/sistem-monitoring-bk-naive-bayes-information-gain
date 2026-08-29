@@ -41,8 +41,7 @@ class KlasifikasiStatsOverview extends StatsOverviewWidget
         | Query hasil klasifikasi pada periode terbaru
         |--------------------------------------------------------------------------
         */
-        $klasifikasiQuery = Klasifikasi::query()
-            ->where('jumlah_pelanggaran', '>', 0);
+        $klasifikasiQuery = Klasifikasi::query();
 
         if ($tahunAjaran !== null && $semester !== null) {
             $klasifikasiQuery

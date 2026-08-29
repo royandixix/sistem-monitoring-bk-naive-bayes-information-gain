@@ -41,8 +41,7 @@ class KlasifikasiStatsOverview extends StatsOverviewWidget
         | Query hasil klasifikasi pada periode terbaru
         |--------------------------------------------------------------------------
         */
-        $klasifikasiQuery = Klasifikasi::query()
-            ->where('jumlah_pelanggaran', '>', 0);
+        $klasifikasiQuery = Klasifikasi::query();
 
         if ($tahunAjaran !== null && $semester !== null) {
             $klasifikasiQuery
@@ -53,15 +52,15 @@ class KlasifikasiStatsOverview extends StatsOverviewWidget
         $total = (clone $klasifikasiQuery)->count();
 
         $baik = (clone $klasifikasiQuery)
-            ->where('label_aktual', 'Baik')
+            ->where('hasil_ig_naive_bayes', 'Baik')
             ->count();
 
         $pembinaan = (clone $klasifikasiQuery)
-            ->where('label_aktual', 'Butuh Perhatian')
+            ->where('hasil_ig_naive_bayes', 'Butuh Perhatian')
             ->count();
 
         $bermasalah = (clone $klasifikasiQuery)
-            ->where('label_aktual', 'Bermasalah')
+            ->where('hasil_ig_naive_bayes', 'Bermasalah')
             ->count();
 
         /*
@@ -132,10 +131,10 @@ class KlasifikasiStatsOverview extends StatsOverviewWidget
                 ->color('primary'),
 
             Stat::make(
-                'Label Aktual Baik',
+                'Kategori Baik',
                 number_format($baik)
             )
-                ->description('Distribusi label aktual pada dataset')
+                ->description('Siswa dengan kategori perilaku baik')
                 ->descriptionIcon('heroicon-o-check-circle')
                 ->icon('heroicon-o-check-badge')
                 ->chart([
@@ -150,10 +149,10 @@ class KlasifikasiStatsOverview extends StatsOverviewWidget
                 ->color('success'),
 
             Stat::make(
-                'Label Aktual Butuh Perhatian',
+                'Butuh Perhatian',
                 number_format($pembinaan)
             )
-                ->description('Distribusi label aktual pada dataset')
+                ->description('Siswa yang membutuhkan pembinaan')
                 ->descriptionIcon('heroicon-o-exclamation-circle')
                 ->icon('heroicon-o-exclamation-triangle')
                 ->chart([
@@ -168,10 +167,10 @@ class KlasifikasiStatsOverview extends StatsOverviewWidget
                 ->color('warning'),
 
             Stat::make(
-                'Label Aktual Bermasalah',
+                'Bermasalah',
                 number_format($bermasalah)
             )
-                ->description('Distribusi label aktual pada dataset')
+                ->description('Siswa dengan prioritas penanganan')
                 ->descriptionIcon('heroicon-o-x-circle')
                 ->icon('heroicon-o-shield-exclamation')
                 ->chart([

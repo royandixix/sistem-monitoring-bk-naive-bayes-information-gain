@@ -99,6 +99,16 @@
             - $tp
         );
 
+        $tn = max(
+            0,
+            $total - $tp - $fp - $fn
+        );
+
+        $accuracyClass =
+            $total > 0
+                ? (($tp + $tn) / $total) * 100
+                : 0;
+
         $precisionClass =
             ($tp + $fp) > 0
                 ? ($tp / ($tp + $fp)) * 100
@@ -144,8 +154,12 @@
 
         $perClass[$class] = [
             'tp' => $tp,
+            'tn' => $tn,
             'fp' => $fp,
             'fn' => $fn,
+
+            'accuracy' =>
+                $accuracyClass,
 
             'precision' =>
                 $precisionClass,
@@ -182,8 +196,15 @@
         ?? 'Model'
     );
 
-    $isOptimized =
+    $isExperimental =
         str_contains(
+            strtolower($methodName),
+            'eksperimen csv'
+        );
+
+    $isOptimized =
+        ! $isExperimental
+        && str_contains(
             strtolower($methodName),
             'information gain'
         );
@@ -815,17 +836,14 @@
                                             )
                                             : 0;
 
-                                    $alpha =
-                                        0.08
-                                        + (
-                                            $strength
-                                            * 0.72
-                                        );
+                                    $isDiagonal =
+                                        $actual === $predicted;
 
-                                    $textColor =
-                                        $strength >= 0.55
-                                            ? '#ffffff'
-                                            : 'inherit';
+                                    $alpha = $isDiagonal
+                                        ? 0.68
+                                        : 0.18 + ($strength * 0.28);
+
+                                    $textColor = '#ffffff';
                                 ?>
 
                                 <div
@@ -896,6 +914,55 @@
 
             </div>
 
+        </div>
+
+        <div style="
+            border:1px solid rgba(156,163,175,.22);
+            border-radius:14px;
+            overflow:hidden;
+        ">
+            <div style="padding:16px 18px;border-bottom:1px solid rgba(156,163,175,.18);">
+                <div style="font-size:16px;font-weight:900;">Confusion Matrix True / False Per Kelas</div>
+                <div style="font-size:12px;opacity:.70;margin-top:4px;line-height:1.6;">
+                    Pendekatan One-vs-Rest. Nilai TP, TN, FP, dan FN dihitung langsung dari Confusion Matrix 3×3 di atas, sehingga tidak mengubah data testing maupun hasil prediksi model.
+                </div>
+            </div>
+
+            <div style="padding:16px;display:grid;grid-template-columns:repeat(auto-fit,minmax(285px,1fr));gap:14px;">
+                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::openLoop(); ?><?php endif; ?><?php $__currentLoopData = $classes; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $class): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::startLoopIteration(); ?><?php endif; ?>
+                    <?php $m = $perClass[$class]; ?>
+                    <div style="border:1px solid rgba(156,163,175,.20);border-radius:12px;padding:14px;">
+                        <div style="font-size:14px;font-weight:900;margin-bottom:12px;">Kelas <?php echo e($class); ?></div>
+                        <div style="display:grid;grid-template-columns:82px 1fr 1fr;gap:6px;">
+                            <div></div>
+                            <div style="padding:9px 5px;text-align:center;border-radius:8px;background:rgba(148,163,184,.10);font-size:10px;font-weight:800;">Prediksi True</div>
+                            <div style="padding:9px 5px;text-align:center;border-radius:8px;background:rgba(148,163,184,.10);font-size:10px;font-weight:800;">Prediksi False</div>
+
+                            <div style="display:flex;align-items:center;justify-content:center;text-align:center;padding:8px 4px;border-radius:8px;background:rgba(148,163,184,.10);font-size:10px;font-weight:800;">Aktual True</div>
+                            <div style="min-height:82px;border-radius:9px;border:1px solid rgba(37,99,235,.35);background:rgba(37,99,235,.55);display:flex;flex-direction:column;align-items:center;justify-content:center;color:#fff;">
+                                <div style="font-size:10px;opacity:.75;">TP</div><div style="font-size:25px;font-weight:900;"><?php echo e($m['tp']); ?></div>
+                            </div>
+                            <div style="min-height:82px;border-radius:9px;border:1px solid rgba(37,99,235,.20);background:rgba(37,99,235,.15);display:flex;flex-direction:column;align-items:center;justify-content:center;">
+                                <div style="font-size:10px;opacity:.70;">FN</div><div style="font-size:25px;font-weight:900;"><?php echo e($m['fn']); ?></div>
+                            </div>
+
+                            <div style="display:flex;align-items:center;justify-content:center;text-align:center;padding:8px 4px;border-radius:8px;background:rgba(148,163,184,.10);font-size:10px;font-weight:800;">Aktual False</div>
+                            <div style="min-height:82px;border-radius:9px;border:1px solid rgba(37,99,235,.20);background:rgba(37,99,235,.15);display:flex;flex-direction:column;align-items:center;justify-content:center;">
+                                <div style="font-size:10px;opacity:.70;">FP</div><div style="font-size:25px;font-weight:900;"><?php echo e($m['fp']); ?></div>
+                            </div>
+                            <div style="min-height:82px;border-radius:9px;border:1px solid rgba(37,99,235,.35);background:rgba(37,99,235,.55);display:flex;flex-direction:column;align-items:center;justify-content:center;color:#fff;">
+                                <div style="font-size:10px;opacity:.75;">TN</div><div style="font-size:25px;font-weight:900;"><?php echo e($m['tn']); ?></div>
+                            </div>
+                        </div>
+                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:10px;">
+                            <div style="padding:9px;border:1px solid rgba(156,163,175,.16);border-radius:8px;"><div style="font-size:9px;opacity:.65;">Accuracy</div><div style="font-size:14px;font-weight:800;"><?php echo e(number_format($m['accuracy'], 2)); ?>%</div></div>
+                            <div style="padding:9px;border:1px solid rgba(156,163,175,.16);border-radius:8px;"><div style="font-size:9px;opacity:.65;">Precision</div><div style="font-size:14px;font-weight:800;"><?php echo e(number_format($m['precision'], 2)); ?>%</div></div>
+                            <div style="padding:9px;border:1px solid rgba(156,163,175,.16);border-radius:8px;"><div style="font-size:9px;opacity:.65;">Recall</div><div style="font-size:14px;font-weight:800;"><?php echo e(number_format($m['recall'], 2)); ?>%</div></div>
+                            <div style="padding:9px;border:1px solid rgba(156,163,175,.16);border-radius:8px;"><div style="font-size:9px;opacity:.65;">F1-Score</div><div style="font-size:14px;font-weight:800;"><?php echo e(number_format($m['f1'], 2)); ?>%</div></div>
+                        </div>
+                    </div>
+                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::endLoop(); ?><?php endif; ?><?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::closeLoop(); ?><?php endif; ?>
+            </div>
         </div>
 
         <div>

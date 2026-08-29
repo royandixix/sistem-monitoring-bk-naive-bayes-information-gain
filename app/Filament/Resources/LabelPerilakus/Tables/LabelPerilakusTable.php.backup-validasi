@@ -2,13 +2,10 @@
 
 namespace App\Filament\Resources\LabelPerilakus\Tables;
 
-use Filament\Actions\BulkAction;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
-use Filament\Notifications\Notification;
 use Filament\Tables\Columns\TextColumn;
-use Illuminate\Database\Eloquent\Collection;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 
@@ -136,40 +133,6 @@ class LabelPerilakusTable
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
-                    BulkAction::make('validasi_label')
-                        ->label('Validasi Label Terpilih')
-                        ->icon('heroicon-o-check-badge')
-                        ->color('success')
-                        ->requiresConfirmation()
-                        ->modalHeading('Validasi label terpilih')
-                        ->modalDescription(
-                            'Label aktual tidak akan diubah. Sistem hanya mencatat bahwa label telah divalidasi oleh Guru BK yang sedang login.'
-                        )
-                        ->visible(
-                            fn (): bool =>
-                                auth()->user()?->role === 'super_admin'
-                        )
-                        ->action(
-                            function (Collection $records): void {
-                                $records->each(
-                                    function ($record): void {
-                                        $record->update([
-                                            'labeled_by' => auth()->id(),
-                                        ]);
-                                    }
-                                );
-
-                                Notification::make()
-                                    ->title('Validasi berhasil')
-                                    ->body(
-                                        $records->count() .
-                                        ' label berhasil dicatat sebagai telah divalidasi.'
-                                    )
-                                    ->success()
-                                    ->send();
-                            }
-                        ),
-
                     DeleteBulkAction::make()
                         ->label(
                             'Hapus Terpilih'

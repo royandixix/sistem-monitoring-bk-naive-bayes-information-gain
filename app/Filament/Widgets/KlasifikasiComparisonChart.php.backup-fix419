@@ -5,18 +5,16 @@ namespace App\Filament\Widgets;
 use App\Models\Klasifikasi;
 use Filament\Widgets\ChartWidget;
 
-class KlasifikasiHasilChart extends ChartWidget
+class KlasifikasiComparisonChart extends ChartWidget
 {
     protected ?string $heading =
-        'Distribusi Label Aktual dan Hasil Klasifikasi';
+        'Perbandingan Hasil Naive Bayes dan NB + Information Gain';
 
     protected ?string $pollingInterval =
         '10s';
 
     protected int|string|array $columnSpan =
         1;
-
-    public ?string $filter = 'aktual';
 
     public static function canView(): bool
     {
@@ -28,39 +26,8 @@ class KlasifikasiHasilChart extends ChartWidget
             ]) ?? false;
     }
 
-    protected function getFilters(): ?array
-    {
-        return [
-            'aktual' =>
-                'Label Aktual Dataset',
-
-            'ig' =>
-                'Naive Bayes + Information Gain',
-
-            'nb' =>
-                'Naive Bayes',
-
-            'akhir' =>
-                'Hasil Klasifikasi Akhir',
-        ];
-    }
-
     protected function getData(): array
     {
-        $column = match ($this->filter) {
-            'aktual' =>
-                'label_aktual',
-
-            'nb' =>
-                'hasil_naive_bayes',
-
-            'akhir' =>
-                'hasil_klasifikasi',
-
-            default =>
-                'hasil_ig_naive_bayes',
-        };
-
         $labels = [
             'Baik',
             'Butuh Perhatian',
@@ -72,12 +39,11 @@ class KlasifikasiHasilChart extends ChartWidget
                 ->latest('updated_at')
                 ->first();
 
-        $query =
-            Klasifikasi::query()
-                ->where('jumlah_pelanggaran', '>', 0);
+        $baseQuery =
+            Klasifikasi::query();
 
         if ($latest?->tahun_ajaran) {
-            $query
+            $baseQuery
                 ->where(
                     'tahun_ajaran',
                     $latest->tahun_ajaran
@@ -88,15 +54,30 @@ class KlasifikasiHasilChart extends ChartWidget
                 );
         }
 
-        $data =
+        $naiveBayes =
             collect($labels)
                 ->map(
                     fn (
                         string $label
                     ): int =>
-                        (clone $query)
+                        (clone $baseQuery)
                             ->where(
-                                $column,
+                                'hasil_naive_bayes',
+                                $label
+                            )
+                            ->count('id')
+                )
+                ->toArray();
+
+        $optimized =
+            collect($labels)
+                ->map(
+                    fn (
+                        string $label
+                    ): int =>
+                        (clone $baseQuery)
+                            ->where(
+                                'hasil_ig_naive_bayes',
                                 $label
                             )
                             ->count('id')
@@ -107,18 +88,28 @@ class KlasifikasiHasilChart extends ChartWidget
             'datasets' => [
                 [
                     'label' =>
-                        'Jumlah Siswa',
+                        'Naive Bayes',
 
                     'data' =>
-                        $data,
+                        $naiveBayes,
 
                     'borderWidth' => 2,
-                    'hoverOffset' => 8,
+                    'borderRadius' => 8,
+                ],
+
+                [
+                    'label' =>
+                        'Naive Bayes + Information Gain',
+
+                    'data' =>
+                        $optimized,
+
+                    'borderWidth' => 2,
+                    'borderRadius' => 8,
                 ],
             ],
 
-            'labels' =>
-                $labels,
+            'labels' => $labels,
         ];
     }
 
@@ -130,8 +121,6 @@ class KlasifikasiHasilChart extends ChartWidget
             'maintainAspectRatio' =>
                 false,
 
-            'cutout' => '62%',
-
             'plugins' => [
                 'legend' => [
                     'position' => 'bottom',
@@ -141,11 +130,21 @@ class KlasifikasiHasilChart extends ChartWidget
                     'enabled' => true,
                 ],
             ],
+
+            'scales' => [
+                'y' => [
+                    'beginAtZero' => true,
+
+                    'ticks' => [
+                        'precision' => 0,
+                    ],
+                ],
+            ],
         ];
     }
 
     protected function getType(): string
     {
-        return 'doughnut';
+        return 'bar';
     }
 }
