@@ -52,9 +52,7 @@ def split_samples(
         group = list(grouped.get(class_name, []))
 
         if len(group) < 2:
-            raise ValueError(
-                f"Kelas {class_name} minimal membutuhkan 2 data berlabel."
-            )
+            raise ValueError(f"Kelas {class_name} minimal membutuhkan 2 data berlabel.")
 
         generator.shuffle(group)
         grouped[class_name] = group
@@ -139,9 +137,7 @@ def split_samples(
     generator.shuffle(testing)
 
     if not training or not testing:
-        raise ValueError(
-            "Data training atau testing kosong."
-        )
+        raise ValueError("Data training atau testing kosong.")
 
     return training, testing
 
@@ -150,12 +146,7 @@ def calculate_information_gain(
     samples: list[dict[str, Any]],
     features: list[str],
 ) -> list[dict[str, Any]]:
-    base_entropy = entropy(
-        [
-            sample["label"]
-            for sample in samples
-        ]
-    )
+    base_entropy = entropy([sample["label"] for sample in samples])
 
     results: list[dict[str, Any]] = []
 
@@ -166,33 +157,22 @@ def calculate_information_gain(
         ] = defaultdict(list)
 
         for sample in samples:
-            value = str(
-                sample
-                .get("features", {})
-                .get(feature, "Tidak Ada")
-            )
+            value = str(sample.get("features", {}).get(feature, "Tidak Ada"))
 
             groups[value].append(sample)
 
         weighted_entropy = 0.0
 
         for group in groups.values():
-            weighted_entropy += (
-                len(group) /
-                max(len(samples), 1)
-            ) * entropy(
-                [
-                    sample["label"]
-                    for sample in group
-                ]
+            weighted_entropy += (len(group) / max(len(samples), 1)) * entropy(
+                [sample["label"] for sample in group]
             )
 
         results.append(
             {
                 "feature": feature,
                 "gain": round(
-                    base_entropy -
-                    weighted_entropy,
+                    base_entropy - weighted_entropy,
                     10,
                 ),
                 "entropy_before": round(
@@ -203,10 +183,7 @@ def calculate_information_gain(
                     weighted_entropy,
                     10,
                 ),
-                "values": {
-                    key: len(value)
-                    for key, value in groups.items()
-                },
+                "values": {key: len(value) for key, value in groups.items()},
             }
         )
 
@@ -229,23 +206,14 @@ def train_naive_bayes(
     features: list[str],
     classes: list[str],
 ) -> dict[str, Any]:
-    class_counts = {
-        class_name: 0
-        for class_name in classes
-    }
+    class_counts = {class_name: 0 for class_name in classes}
 
     feature_counts = {
-        class_name: {
-            feature: defaultdict(int)
-            for feature in features
-        }
+        class_name: {feature: defaultdict(int) for feature in features}
         for class_name in classes
     }
 
-    feature_values = {
-        feature: set()
-        for feature in features
-    }
+    feature_values = {feature: set() for feature in features}
 
     for sample in samples:
         label = sample.get("label")
@@ -256,21 +224,11 @@ def train_naive_bayes(
         class_counts[label] += 1
 
         for feature in features:
-            value = str(
-                sample
-                .get("features", {})
-                .get(feature, "Tidak Ada")
-            )
+            value = str(sample.get("features", {}).get(feature, "Tidak Ada"))
 
             feature_values[feature].add(value)
 
-            feature_counts[
-                label
-            ][
-                feature
-            ][
-                value
-            ] += 1
+            feature_counts[label][feature][value] += 1
 
     return {
         "total": len(samples),
@@ -279,12 +237,9 @@ def train_naive_bayes(
         "class_counts": class_counts,
         "feature_counts": feature_counts,
         "feature_values": {
-            feature: list(values)
-            for feature, values
-            in feature_values.items()
+            feature: list(values) for feature, values in feature_values.items()
         },
     }
-
 
 
 def serialize_model(model: dict[str, Any]) -> dict[str, Any]:
@@ -299,10 +254,7 @@ def serialize_model(model: dict[str, Any]) -> dict[str, Any]:
         },
         "feature_counts": {
             class_name: {
-                feature: {
-                    str(value): int(count)
-                    for value, count in counts.items()
-                }
+                feature: {str(value): int(count) for value, count in counts.items()}
                 for feature, counts in class_features.items()
             }
             for class_name, class_features in model.get("feature_counts", {}).items()
@@ -313,12 +265,11 @@ def serialize_model(model: dict[str, Any]) -> dict[str, Any]:
         },
     }
 
+
 def normalize_logs(
     logs: dict[str, float],
 ) -> dict[str, float]:
-    maximum = max(
-        logs.values()
-    )
+    maximum = max(logs.values())
 
     exponentials: dict[
         str,
@@ -328,23 +279,20 @@ def normalize_logs(
     total = 0.0
 
     for class_name, value in logs.items():
-        exponentials[class_name] = math.exp(
-            value - maximum
-        )
+        exponentials[class_name] = math.exp(value - maximum)
 
         total += exponentials[class_name]
 
     return {
         class_name: round(
-            value /
-            max(
+            value
+            / max(
                 total,
                 sys.float_info.min,
             ),
             6,
         )
-        for class_name, value
-        in exponentials.items()
+        for class_name, value in exponentials.items()
     }
 
 
@@ -354,25 +302,15 @@ def predict(
 ) -> dict[str, Any]:
     logs: dict[str, float] = {}
 
-    total_classes = len(
-        model["classes"]
-    )
+    total_classes = len(model["classes"])
 
     for class_name in model["classes"]:
-        class_count = model[
-            "class_counts"
-        ].get(
+        class_count = model["class_counts"].get(
             class_name,
             0,
         )
 
-        log_probability = math.log(
-            (class_count + 1) /
-            (
-                model["total"] +
-                total_classes
-            )
-        )
+        log_probability = math.log((class_count + 1) / (model["total"] + total_classes))
 
         for feature in model["features"]:
             value = str(
@@ -382,27 +320,17 @@ def predict(
                 )
             )
 
-            known_values = model[
-                "feature_values"
-            ].get(
+            known_values = model["feature_values"].get(
                 feature,
                 [],
             )
 
-            value_count = model[
-                "feature_counts"
-            ][
-                class_name
-            ][
-                feature
-            ].get(
+            value_count = model["feature_counts"][class_name][feature].get(
                 value,
                 0,
             )
 
-            value_cardinality = len(
-                known_values
-            )
+            value_cardinality = len(known_values)
 
             if value not in known_values:
                 value_cardinality += 1
@@ -413,18 +341,12 @@ def predict(
             )
 
             log_probability += math.log(
-                (value_count + 1) /
-                (
-                    class_count +
-                    value_cardinality
-                )
+                (value_count + 1) / (class_count + value_cardinality)
             )
 
         logs[class_name] = log_probability
 
-    probabilities = normalize_logs(
-        logs
-    )
+    probabilities = normalize_logs(logs)
 
     predicted_class = max(
         probabilities,
@@ -433,10 +355,8 @@ def predict(
 
     return {
         "class": predicted_class,
-        "probability":
-            probabilities[predicted_class],
-        "probabilities":
-            probabilities,
+        "probability": probabilities[predicted_class],
+        "probabilities": probabilities,
     }
 
 
@@ -445,13 +365,7 @@ def evaluate(
     model: dict[str, Any],
     classes: list[str],
 ) -> dict[str, Any]:
-    matrix = {
-        actual: {
-            predicted: 0
-            for predicted in classes
-        }
-        for actual in classes
-    }
+    matrix = {actual: {predicted: 0 for predicted in classes} for actual in classes}
 
     for sample in samples:
         actual = sample.get("label")
@@ -464,21 +378,12 @@ def evaluate(
             sample.get("features", {}),
         )["class"]
 
-        matrix[
-            actual
-        ][
-            predicted
-        ] += 1
+        matrix[actual][predicted] += 1
 
-    valid_total = sum(
-        sum(row.values())
-        for row in matrix.values()
-    )
+    valid_total = sum(sum(row.values()) for row in matrix.values())
 
     if valid_total == 0:
-        raise ValueError(
-            "Data testing valid tidak tersedia."
-        )
+        raise ValueError("Data testing valid tidak tersedia.")
 
     correct = 0
     precision_total = 0.0
@@ -491,51 +396,20 @@ def evaluate(
     ] = {}
 
     for class_name in classes:
-        tp = matrix[
-            class_name
-        ][
-            class_name
-        ]
+        tp = matrix[class_name][class_name]
 
-        fp = sum(
-            matrix[
-                other
-            ][
-                class_name
-            ]
-            for other in classes
-            if other != class_name
-        )
+        fp = sum(matrix[other][class_name] for other in classes if other != class_name)
 
-        fn = sum(
-            matrix[
-                class_name
-            ][
-                other
-            ]
-            for other in classes
-            if other != class_name
-        )
+        fn = sum(matrix[class_name][other] for other in classes if other != class_name)
 
-        support = sum(
-            matrix[class_name].values()
-        )
+        support = sum(matrix[class_name].values())
 
-        precision = (
-            tp / (tp + fp)
-            if (tp + fp) > 0
-            else 0.0
-        )
+        precision = tp / (tp + fp) if (tp + fp) > 0 else 0.0
 
-        recall = (
-            tp / (tp + fn)
-            if (tp + fn) > 0
-            else 0.0
-        )
+        recall = tp / (tp + fn) if (tp + fn) > 0 else 0.0
 
         f1 = (
-            2 * precision * recall /
-            (precision + recall)
+            2 * precision * recall / (precision + recall)
             if (precision + recall) > 0
             else 0.0
         )
@@ -567,31 +441,21 @@ def evaluate(
             2,
         ),
         "precision": round(
-            (
-                precision_total /
-                len(classes)
-            ) * 100,
+            (precision_total / len(classes)) * 100,
             2,
         ),
         "recall": round(
-            (
-                recall_total /
-                len(classes)
-            ) * 100,
+            (recall_total / len(classes)) * 100,
             2,
         ),
         "f1_score": round(
-            (
-                f1_total /
-                len(classes)
-            ) * 100,
+            (f1_total / len(classes)) * 100,
             2,
         ),
         "confusion_matrix": matrix,
         "per_class": per_class,
         "features": model["features"],
     }
-
 
 
 def build_predictions(
@@ -631,18 +495,15 @@ def build_predictions(
 
     return predictions
 
+
 def main() -> None:
     try:
         raw_payload = sys.stdin.read().strip()
 
         if not raw_payload:
-            raise ValueError(
-                "Payload dari Laravel kosong."
-            )
+            raise ValueError("Payload dari Laravel kosong.")
 
-        payload = json.loads(
-            raw_payload
-        )
+        payload = json.loads(raw_payload)
 
         mode = str(payload.get("mode", "train")).lower()
 
@@ -692,9 +553,7 @@ def main() -> None:
         training_ratio = 0.7
 
         if not prediction_samples:
-            raise ValueError(
-                "Data siswa yang akan diprediksi kosong."
-            )
+            raise ValueError("Data siswa yang akan diprediksi kosong.")
 
         if mode == "predict":
             baseline_model = payload.get("baseline_model")
@@ -704,7 +563,9 @@ def main() -> None:
                 raise ValueError("Knowledge model Naive Bayes belum tersedia.")
 
             if not isinstance(optimized_model, dict) or not optimized_model:
-                raise ValueError("Knowledge model Naive Bayes + Information Gain belum tersedia.")
+                raise ValueError(
+                    "Knowledge model Naive Bayes + Information Gain belum tersedia."
+                )
 
             predictions = build_predictions(
                 prediction_samples,
@@ -731,9 +592,7 @@ def main() -> None:
             raise ValueError("Mode Python tidak valid. Gunakan train atau predict.")
 
         if not features:
-            raise ValueError(
-                "Daftar fitur kosong."
-            )
+            raise ValueError("Daftar fitur kosong.")
 
         training, testing = split_samples(
             labeled_samples,
@@ -748,9 +607,7 @@ def main() -> None:
         )
 
         selected_features = [
-            item["feature"]
-            for item in gain_results
-            if item["gain"] > 0
+            item["feature"] for item in gain_results if item["gain"] > 0
         ][:3]
 
         if not selected_features:
@@ -776,56 +633,28 @@ def main() -> None:
 
         output = {
             "success": True,
-
-            "message":
-                "Klasifikasi berhasil diproses menggunakan Python.",
-
-            "total_samples":
-                len(prediction_samples),
-
-            "total_labeled_samples":
-                len(labeled_samples),
-
-            "training_count":
-                len(training),
-
-            "testing_count":
-                len(testing),
-
-            "training_ratio":
-                training_ratio,
-
-            "random_seed":
-                random_seed,
-
-            "selected_features":
-                selected_features,
-
-            "baseline_model":
-                serialize_model(baseline_model),
-
-            "optimized_model":
-                serialize_model(optimized_model),
-
-            "gain_results":
-                gain_results,
-
-            "predictions":
-                predictions,
-
-            "baseline_evaluation":
-                evaluate(
-                    testing,
-                    baseline_model,
-                    classes,
-                ),
-
-            "optimized_evaluation":
-                evaluate(
-                    testing,
-                    optimized_model,
-                    classes,
-                ),
+            "message": "Klasifikasi berhasil diproses menggunakan Python.",
+            "total_samples": len(prediction_samples),
+            "total_labeled_samples": len(labeled_samples),
+            "training_count": len(training),
+            "testing_count": len(testing),
+            "training_ratio": training_ratio,
+            "random_seed": random_seed,
+            "selected_features": selected_features,
+            "baseline_model": serialize_model(baseline_model),
+            "optimized_model": serialize_model(optimized_model),
+            "gain_results": gain_results,
+            "predictions": predictions,
+            "baseline_evaluation": evaluate(
+                testing,
+                baseline_model,
+                classes,
+            ),
+            "optimized_evaluation": evaluate(
+                testing,
+                optimized_model,
+                classes,
+            ),
         }
 
         print(

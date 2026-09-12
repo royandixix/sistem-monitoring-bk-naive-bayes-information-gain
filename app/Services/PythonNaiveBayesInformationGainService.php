@@ -21,10 +21,17 @@ class PythonNaiveBayesInformationGainService
         'Bermasalah',
     ];
 
+    // private array $featureKeys = [
+    //     'kerajinan_kategori',
+    //     'kelakuan_kategori',
+    //     'kerapian_kategori',
+    // ];
     private array $featureKeys = [
         'kerajinan_kategori',
         'kelakuan_kategori',
         'kerapian_kategori',
+        'jumlah_pelanggaran',
+        'total_poin',
     ];
 
     public function run(
@@ -50,7 +57,7 @@ class PythonNaiveBayesInformationGainService
 
         $labeledSamples = $allSamples
             ->filter(
-                fn (array $sample): bool => in_array(
+                fn(array $sample): bool => in_array(
                     $sample['label'],
                     $this->classes,
                     true
@@ -68,7 +75,7 @@ class PythonNaiveBayesInformationGainService
 
         $insufficientClasses = collect($this->classes)
             ->filter(
-                fn (string $class): bool => (int) (
+                fn(string $class): bool => (int) (
                     $classCounts[$class] ?? 0
                 ) < 2
             )
@@ -77,15 +84,15 @@ class PythonNaiveBayesInformationGainService
         if ($insufficientClasses->isNotEmpty()) {
             $details = collect($this->classes)
                 ->map(
-                    fn (string $class): string => $class.': '.
+                    fn(string $class): string => $class . ': ' .
                         (int) ($classCounts[$class] ?? 0)
                 )
                 ->implode(', ');
 
             return $this->failed(
-                'Data label aktual belum cukup. Setiap kelas minimal memiliki 2 siswa. '.
-                'Jumlah saat ini: '.$details.
-                '. Isi menu Label Perilaku terlebih dahulu.'
+                'Data label aktual belum cukup. Setiap kelas minimal memiliki 2 siswa. ' .
+                    'Jumlah saat ini: ' . $details .
+                    '. Isi menu Label Perilaku terlebih dahulu.'
             );
         }
 
@@ -138,54 +145,54 @@ class PythonNaiveBayesInformationGainService
                     ],
                     [
                         'jumlah_pelanggaran' =>
-                            $prediction['jumlah_pelanggaran'],
+                        $prediction['jumlah_pelanggaran'],
 
                         'total_poin' =>
-                            $prediction['total_poin'],
+                        $prediction['total_poin'],
 
                         'hasil_klasifikasi' =>
-                            $prediction['optimized']['class'],
+                        $prediction['optimized']['class'],
 
                         'label_aktual' =>
-                            $prediction['label'] ?: null,
+                        $prediction['label'] ?: null,
 
                         'hasil_naive_bayes' =>
-                            $prediction['baseline']['class'],
+                        $prediction['baseline']['class'],
 
                         'probabilitas_naive_bayes' =>
-                            $prediction['baseline']['probability'],
+                        $prediction['baseline']['probability'],
 
                         'hasil_ig_naive_bayes' =>
-                            $prediction['optimized']['class'],
+                        $prediction['optimized']['class'],
 
                         'probabilitas_ig_naive_bayes' =>
-                            $prediction['optimized']['probability'],
+                        $prediction['optimized']['probability'],
 
                         'probabilitas' =>
-                            $prediction['optimized']['probability'],
+                        $prediction['optimized']['probability'],
 
                         'probabilitas_detail' =>
-                            $prediction['optimized']['probabilities'],
+                        $prediction['optimized']['probabilities'],
 
                         'fitur_klasifikasi' =>
-                            $prediction['features'],
+                        $prediction['features'],
 
                         'information_gain_detail' => [
                             'selected_features' =>
-                                $result['selected_features'] ?? [],
+                            $result['selected_features'] ?? [],
 
                             'ranking' =>
-                                $result['gain_results'] ?? [],
+                            $result['gain_results'] ?? [],
 
                             'training_ratio' =>
-                                $trainingRatio,
+                            $trainingRatio,
 
                             'random_seed' =>
-                                $randomSeed,
+                            $randomSeed,
                         ],
 
                         'metode' =>
-                            'Naive Bayes + Information Gain',
+                        'Naive Bayes + Information Gain',
                     ]
                 );
             }
@@ -292,52 +299,52 @@ class PythonNaiveBayesInformationGainService
                     ],
                     [
                         'jumlah_pelanggaran' =>
-                            $prediction['jumlah_pelanggaran'],
+                        $prediction['jumlah_pelanggaran'],
 
                         'total_poin' =>
-                            $prediction['total_poin'],
+                        $prediction['total_poin'],
 
                         'hasil_klasifikasi' =>
-                            $prediction['optimized']['class'],
+                        $prediction['optimized']['class'],
 
                         'label_aktual' =>
-                            $prediction['label'] ?: null,
+                        $prediction['label'] ?: null,
 
                         'hasil_naive_bayes' =>
-                            $prediction['baseline']['class'],
+                        $prediction['baseline']['class'],
 
                         'probabilitas_naive_bayes' =>
-                            $prediction['baseline']['probability'],
+                        $prediction['baseline']['probability'],
 
                         'hasil_ig_naive_bayes' =>
-                            $prediction['optimized']['class'],
+                        $prediction['optimized']['class'],
 
                         'probabilitas_ig_naive_bayes' =>
-                            $prediction['optimized']['probability'],
+                        $prediction['optimized']['probability'],
 
                         'probabilitas' =>
-                            $prediction['optimized']['probability'],
+                        $prediction['optimized']['probability'],
 
                         'probabilitas_detail' =>
-                            $prediction['optimized']['probabilities'],
+                        $prediction['optimized']['probabilities'],
 
                         'fitur_klasifikasi' =>
-                            $prediction['features'],
+                        $prediction['features'],
 
                         'information_gain_detail' => [
                             'selected_features' =>
-                                $optimizedModel->features ?? [],
+                            $optimizedModel->features ?? [],
 
                             'training_ratio' => 0.7,
 
                             'random_seed' =>
-                                (int) $optimizedModel->random_seed,
+                            (int) $optimizedModel->random_seed,
 
                             'mode' => 'stored_model',
                         ],
 
                         'metode' =>
-                            'Naive Bayes + Information Gain',
+                        'Naive Bayes + Information Gain',
                     ]
                 );
             }
@@ -383,7 +390,7 @@ class PythonNaiveBayesInformationGainService
                 json_encode(
                     $payload,
                     JSON_UNESCAPED_UNICODE |
-                    JSON_THROW_ON_ERROR
+                        JSON_THROW_ON_ERROR
                 )
             );
 
@@ -391,8 +398,8 @@ class PythonNaiveBayesInformationGainService
             $process->run();
         } catch (Throwable $exception) {
             return $this->failed(
-                'Gagal menjalankan Python: '.
-                $exception->getMessage()
+                'Gagal menjalankan Python: ' .
+                    $exception->getMessage()
             );
         }
 
@@ -417,8 +424,8 @@ class PythonNaiveBayesInformationGainService
             );
         } catch (Throwable $exception) {
             return $this->failed(
-                'Output Python tidak valid: '.
-                $exception->getMessage()
+                'Output Python tidak valid: ' .
+                    $exception->getMessage()
             );
         }
 
@@ -492,12 +499,12 @@ class PythonNaiveBayesInformationGainService
 
                 $totalPoin =
                     $pelanggarans->sum(
-                        fn ($item): int =>
-                            (int) (
-                                $item
-                                    ->jenisPelanggaran
-                                    ?->poin ?? 0
-                            )
+                        fn($item): int =>
+                        (int) (
+                            $item
+                            ->jenisPelanggaran
+                            ?->poin ?? 0
+                        )
                     );
 
                 $aspectPoints =
@@ -505,37 +512,44 @@ class PythonNaiveBayesInformationGainService
                         $pelanggarans
                     );
 
+                // $features =
+                //     $this->makeFeatures(
+                //         $aspectPoints
+                //     );
+
                 $features =
                     $this->makeFeatures(
-                        $aspectPoints
+                        $aspectPoints,
+                        $jumlahPelanggaran,
+                        $totalPoin
                     );
 
                 $label =
                     $siswa
-                        ->labelPerilakus
-                        ->first()
-                        ?->label_aktual;
+                    ->labelPerilakus
+                    ->first()
+                    ?->label_aktual;
 
                 return [
                     'siswa_id' =>
-                        $siswa->id,
+                    $siswa->id,
 
                     'jumlah_pelanggaran' =>
-                        $jumlahPelanggaran,
+                    $jumlahPelanggaran,
 
                     'total_poin' =>
-                        $totalPoin,
+                    $totalPoin,
 
                     'features' =>
-                        $features,
+                    $features,
 
                     'label' =>
-                        $label,
+                    $label,
                 ];
             })
             ->filter(
-                fn (array $sample): bool =>
-                    (int) ($sample['jumlah_pelanggaran'] ?? 0) > 0
+                fn(array $sample): bool =>
+                (int) ($sample['jumlah_pelanggaran'] ?? 0) > 0
             )
             ->values();
     }
@@ -552,8 +566,8 @@ class PythonNaiveBayesInformationGainService
         foreach ($pelanggarans as $pelanggaran) {
             $aspek =
                 $pelanggaran
-                    ->jenisPelanggaran
-                    ?->aspek_pelanggaran;
+                ->jenisPelanggaran
+                ?->aspek_pelanggaran;
 
             if (! array_key_exists($aspek, $points)) {
                 continue;
@@ -561,32 +575,62 @@ class PythonNaiveBayesInformationGainService
 
             $points[$aspek] += (int) (
                 $pelanggaran
-                    ->jenisPelanggaran
-                    ?->poin ?? 0
+                ->jenisPelanggaran
+                ?->poin ?? 0
             );
         }
 
         return $points;
     }
 
+    // private function makeFeatures(
+    //     array $aspectPoints
+    // ): array {
+    //     return [
+    //         'kerajinan_kategori' =>
+    //         $this->aspectPointCategory(
+    //             $aspectPoints['Kerajinan'] ?? 0
+    //         ),
+
+    //         'kelakuan_kategori' =>
+    //         $this->aspectPointCategory(
+    //             $aspectPoints['Kelakuan'] ?? 0
+    //         ),
+
+    //         'kerapian_kategori' =>
+    //         $this->aspectPointCategory(
+    //             $aspectPoints['Kerapian'] ?? 0
+    //         ),
+    //     ];
+    // }
+
     private function makeFeatures(
-        array $aspectPoints
+        array $aspectPoints,
+        int $jumlahPelanggaran,
+        int $totalPoin
     ): array {
         return [
+
             'kerajinan_kategori' =>
-                $this->aspectPointCategory(
-                    $aspectPoints['Kerajinan'] ?? 0
-                ),
+            $this->aspectPointCategory(
+                $aspectPoints['Kerajinan'] ?? 0
+            ),
 
             'kelakuan_kategori' =>
-                $this->aspectPointCategory(
-                    $aspectPoints['Kelakuan'] ?? 0
-                ),
+            $this->aspectPointCategory(
+                $totalPoin
+            ),
 
             'kerapian_kategori' =>
-                $this->aspectPointCategory(
-                    $aspectPoints['Kerapian'] ?? 0
-                ),
+            $this->aspectPointCategory(
+                $aspectPoints['Kerapian'] ?? 0
+            ),
+
+            'jumlah_pelanggaran' =>
+            $jumlahPelanggaran,
+
+            'total_poin' =>
+            $totalPoin,
         ];
     }
 
@@ -636,7 +680,7 @@ class PythonNaiveBayesInformationGainService
             [
                 'classes' => $this->classes,
                 'features' =>
-                    $selectedFeatures ?: $this->featureKeys,
+                $selectedFeatures ?: $this->featureKeys,
 
                 'model' => $optimizedModel,
                 'jumlah_data_training' => $trainingCount,
@@ -669,44 +713,44 @@ class PythonNaiveBayesInformationGainService
             InformationGainResult::query()
                 ->create([
                     'tahun_ajaran' =>
-                        $tahunAjaran,
+                    $tahunAjaran,
 
                     'semester' =>
-                        $semester,
+                    $semester,
 
                     'fitur' =>
-                        $result['feature'],
+                    $result['feature'],
 
                     'gain' =>
-                        $result['gain'],
+                    $result['gain'],
 
                     'entropy_before' =>
-                        $result['entropy_before'],
+                    $result['entropy_before'],
 
                     'entropy_after' =>
-                        $result['entropy_after'],
+                    $result['entropy_after'],
 
                     'selected' =>
-                        in_array(
-                            $result['feature'],
-                            $selectedFeatures,
-                            true
-                        ),
+                    in_array(
+                        $result['feature'],
+                        $selectedFeatures,
+                        true
+                    ),
 
                     'metode' =>
-                        'Information Gain',
+                    'Information Gain',
 
                     'jumlah_data' =>
-                        $jumlahData,
+                    $jumlahData,
 
                     'ranking' =>
-                        $result['ranking'],
+                    $result['ranking'],
 
                     'random_seed' =>
-                        $randomSeed,
+                    $randomSeed,
 
                     'detail' =>
-                        $result['values'],
+                    $result['values'],
                 ]);
         }
     }
@@ -723,56 +767,54 @@ class PythonNaiveBayesInformationGainService
     ): void {
         EvaluasiModel::query()->create([
             'metode' =>
-                $method,
+            $method,
 
             'tahun_ajaran' =>
-                $tahunAjaran,
+            $tahunAjaran,
 
             'semester' =>
-                $semester,
+            $semester,
 
             'jumlah_data_training' =>
-                $trainingCount,
+            $trainingCount,
 
             'jumlah_data_testing' =>
-                $testingCount,
+            $testingCount,
 
             'training_ratio' =>
-                $trainingRatio,
+            $trainingRatio,
 
             'random_seed' =>
-                $randomSeed,
+            $randomSeed,
 
             'akurasi' =>
-                $evaluation['akurasi'],
+            $evaluation['akurasi'],
 
             'precision' =>
-                $evaluation['precision'],
+            $evaluation['precision'],
 
             'recall' =>
-                $evaluation['recall'],
+            $evaluation['recall'],
 
             'f1_score' =>
-                $evaluation['f1_score'],
+            $evaluation['f1_score'],
 
             'confusion_matrix' =>
-                $evaluation[
-                    'confusion_matrix'
-                ],
+            $evaluation['confusion_matrix'],
 
             'selected_features' =>
-                $evaluation['features'] ?? [],
+            $evaluation['features'] ?? [],
 
             'keterangan' =>
-                sprintf(
-                    'Rasio training %.2f, random seed %d. Fitur: %s',
-                    $trainingRatio,
-                    $randomSeed,
-                    implode(
-                        ', ',
-                        $evaluation['features'] ?? []
-                    )
-                ),
+            sprintf(
+                'Rasio training %.2f, random seed %d. Fitur: %s',
+                $trainingRatio,
+                $randomSeed,
+                implode(
+                    ', ',
+                    $evaluation['features'] ?? []
+                )
+            ),
         ]);
     }
 

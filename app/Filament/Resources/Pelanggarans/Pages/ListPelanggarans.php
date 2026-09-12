@@ -6,7 +6,6 @@ use App\Filament\Resources\Pelanggarans\PelanggaranResource;
 use App\Models\Kelas;
 use App\Models\Pelanggaran;
 use App\Models\Siswa;
-use App\Services\PelanggaranReportService;
 use Filament\Actions\Action;
 use Filament\Actions\CreateAction;
 use Filament\Forms\Components\Select;
@@ -33,7 +32,7 @@ class ListPelanggarans extends ListRecords
                     'kepala_sekolah',
                 ]) ?? false)
                 ->modalHeading('Export Laporan Pelanggaran Resmi')
-                ->modalDescription('Laporan hanya memuat data pelanggaran yang sudah disetujui Guru BK. Dapat difilter per kelas atau per siswa.')
+                ->modalDescription('Laporan hanya memuat data pelanggaran yang sudah disetujui Guru BK.')
                 ->modalSubmitActionLabel('Download')
                 ->schema([
                     Select::make('format')
@@ -48,15 +47,7 @@ class ListPelanggarans extends ListRecords
 
                     TextInput::make('tahun_ajaran')
                         ->label('Tahun Ajaran')
-                        ->default('2025/2026')
-                        ->datalist(fn (): array => Pelanggaran::query()
-                            ->whereNotNull('tahun_ajaran')
-                            ->distinct()
-                            ->orderByDesc('tahun_ajaran')
-                            ->pluck('tahun_ajaran')
-                            ->values()
-                            ->all())
-                        ->placeholder('2025/2026'),
+                        ->default('2025/2026'),
 
                     Select::make('semester')
                         ->label('Semester')
@@ -90,13 +81,13 @@ class ListPelanggarans extends ListRecords
                         ->native(false),
                 ])
                 ->action(function (array $data) {
-                    $service = app(PelanggaranReportService::class);
+                    session()->put('export_pelanggaran_filters', $data);
 
                     if (($data['format'] ?? 'pdf') === 'excel') {
-                        return $service->downloadExcel($data);
+                        return redirect()->route('export.pelanggaran.excel');
                     }
 
-                    return $service->downloadPdf($data);
+                    return redirect()->route('export.pelanggaran.pdf');
                 }),
         ];
     }
