@@ -28,10 +28,8 @@ class PythonNaiveBayesInformationGainService
     // ];
     private array $featureKeys = [
         'kerajinan_kategori',
-        'kelakuan_kategori',
         'kerapian_kategori',
-        'jumlah_pelanggaran',
-        'total_poin',
+        'kelakuan_kategori',
     ];
 
     public function run(
@@ -547,10 +545,7 @@ class PythonNaiveBayesInformationGainService
                     $label,
                 ];
             })
-            ->filter(
-                fn(array $sample): bool =>
-                (int) ($sample['jumlah_pelanggaran'] ?? 0) > 0
-            )
+
             ->values();
     }
 
@@ -610,30 +605,17 @@ class PythonNaiveBayesInformationGainService
         int $totalPoin
     ): array {
         return [
-
-            'kerajinan_kategori' =>
-            $this->aspectPointCategory(
+            'kerajinan_kategori' => $this->aspectPointCategory(
                 $aspectPoints['Kerajinan'] ?? 0
             ),
-
-            'kelakuan_kategori' =>
-            $this->aspectPointCategory(
-                $totalPoin
-            ),
-
-            'kerapian_kategori' =>
-            $this->aspectPointCategory(
+            'kerapian_kategori' => $this->aspectPointCategory(
                 $aspectPoints['Kerapian'] ?? 0
             ),
-
-            'jumlah_pelanggaran' =>
-            $jumlahPelanggaran,
-
-            'total_poin' =>
-            $totalPoin,
+            'kelakuan_kategori' => $this->aspectPointCategory(
+                $aspectPoints['Kelakuan'] ?? 0
+            ),
         ];
     }
-
     private function aspectPointCategory(
         int $value
     ): string {

@@ -1,0 +1,49 @@
+<?php
+
+namespace App\Exports;
+
+use App\Models\Pelanggaran;
+use Maatwebsite\Excel\Concerns\FromCollection;
+use Maatwebsite\Excel\Concerns\WithHeadings;
+
+class PelanggaranExport implements FromCollection, WithHeadings
+{
+    public function collection()
+    {
+        return Pelanggaran::with([
+            'siswa',
+            'jenisPelanggaran'
+        ])->get()->map(function ($item) {
+
+            return [
+                'NIS' => $item->siswa->nis ?? '-',
+                'Nama Siswa' => $item->siswa->nama ?? '-',
+                'Kelas' => $item->siswa->kelas->nama_kelas ?? '-',
+                'Jenis Pelanggaran' => $item->jenisPelanggaran->nama_jenis ?? '-',
+                'Aspek' => $item->aspek,
+                'Tingkat' => $item->tingkat,
+                'Poin' => $item->poin,
+                'Tanggal Kejadian' => $item->tanggal_kejadian,
+                'Tahun Ajaran' => $item->tahun_ajaran,
+                'Semester' => $item->semester,
+            ];
+        });
+    }
+
+
+    public function headings(): array
+    {
+        return [
+            'NIS',
+            'Nama Siswa',
+            'Kelas',
+            'Jenis Pelanggaran',
+            'Aspek',
+            'Tingkat',
+            'Poin',
+            'Tanggal Kejadian',
+            'Tahun Ajaran',
+            'Semester',
+        ];
+    }
+}

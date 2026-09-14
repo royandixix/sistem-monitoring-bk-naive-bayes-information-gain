@@ -3,270 +3,295 @@
 namespace App\Services;
 
 use App\Models\Pelanggaran;
+use App\Exports\PelanggaranExport;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
-use Symfony\Component\HttpFoundation\Response;
+use Maatwebsite\Excel\Facades\Excel;
 
 class PelanggaranReportService
 {
-    public function downloadPdf(array $filters = []): Response
+
+    /**
+     * Export PDF
+     */
+    public function downloadPdf(array $filters = [])
     {
-        $rows = $this->rows($filters);
+        $rows = $this->query($filters)->get();
 
-        $pdf = Pdf::loadHtml(
-            $this->buildPdfHtml($rows, $filters)
+        return Pdf::loadHtml(
+            $this->buildPdf($rows, $filters)
         )
-        ->setPaper('a4', 'landscape');
+        ->setPaper('a4', 'landscape')
+        ->download('laporan-pelanggaran.pdf');
+    }
 
-        return $pdf->download(
-            $this->filename($filters, 'pdf')
+
+
+    /**
+     * Export Excel
+     */
+    public function downloadExcel(array $filters = [])
+    {
+        return Excel::download(
+            new PelanggaranExport($filters),
+            'laporan-pelanggaran.xlsx'
         );
     }
 
 
-    public function downloadExcel(array $filters = []): Response
-    {
-        $rows = $this->rows($filters);
 
-        $xml = $this->buildExcelXml($rows, $filters);
-
-        return response($xml, 200, [
-            'Content-Type' => 'application/vnd.ms-excel; charset=UTF-8',
-            'Content-Disposition' => 'attachment; filename="' .
-                $this->filename($filters, 'xls') . '"',
-        ]);
-    }
-
-
-    private function rows(array $filters): Collection
-    {
-        return $this->query($filters)->get();
-    }
-
-
+    /**
+     * Query laporan
+     */
     private function query(array $filters): Builder
     {
+
         $query = Pelanggaran::query()
-            ->disetujui()
+            ->where(
+                'status_pengajuan',
+                'disetujui'
+            )
             ->with([
                 'siswa.kelas',
-                'jenisPelanggaran',
-                'diajukanOleh',
-                'diprosesOleh',
+                'jenisPelanggaran'
             ])
-            ->orderBy('tanggal')
-            ->orderBy('id');
+            ->orderBy(
+                'tanggal',
+                'asc'
+            );
 
 
+
+        // Filter Tahun Ajaran
         if (!empty($filters['tahun_ajaran'])) {
+
             $query->where(
                 'tahun_ajaran',
-                $filters['tahun_ajaran']
+                trim($filters['tahun_ajaran'])
             );
+
         }
 
 
+
+        // Filter Semester
         if (!empty($filters['semester'])) {
+
             $query->where(
                 'semester',
-                $filters['semester']
+                trim($filters['semester'])
             );
+
         }
 
 
+
+        // Filter Kelas
         if (!empty($filters['kelas_id'])) {
+
             $query->whereHas(
                 'siswa',
-                fn($q) =>
+                function ($q) use ($filters) {
+
                     $q->where(
                         'kelas_id',
                         $filters['kelas_id']
-                    )
+                    );
+
+                }
             );
+
         }
 
 
+
+        // Filter Siswa
         if (!empty($filters['siswa_id'])) {
+
             $query->where(
                 'siswa_id',
                 $filters['siswa_id']
             );
+
         }
 
 
+
         return $query;
+
     }
 
 
-    private function buildPdfHtml(
+
+
+    /**
+     * Template PDF
+     */
+    private function buildPdf(
         Collection $rows,
         array $filters
-    ): string {
+    ): string
+    {
 
         $html = '
-        <html>
-        <head>
+<html>
 
-        <style>
-            body {
-                font-family: Arial;
-                font-size: 11px;
-            }
+<head>
 
-            h3 {
-                text-align:center;
-            }
+<style>
 
-            table {
-                width:100%;
-                border-collapse: collapse;
-            }
+body{
+    font-family: Arial;
+    font-size:10px;
+}
 
-            table, th, td {
-                border:1px solid black;
-            }
+h2{
+    text-align:center;
+}
 
-            th, td {
-                padding:5px;
-            }
+table{
+    width:100%;
+    border-collapse:collapse;
+}
 
-            th {
-                background:#eeeeee;
-            }
-        </style>
+th,td{
+    border:1px solid black;
+    padding:5px;
+}
 
-        </head>
+th{
+    background:#ddd;
+}
 
-        <body>
+</style>
 
-        <h3>
-        LAPORAN DATA PELANGGARAN SISWA<br>
-        SMP FRATER MAKASSAR
-        </h3>
+</head>
 
 
-        <p>
-        '.$this->filterSummary($filters).'
-        </p>
+<body>
 
 
-        <table>
+<h2>
+LAPORAN DATA PELANGGARAN SISWA
+<br>
+SMP FRATER MAKASSAR
+</h2>
 
-        <tr>
-            <th>No</th>
-            <th>Tanggal</th>
-            <th>NIS</th>
-            <th>Nama Siswa</th>
-            <th>Kelas</th>
-            <th>Aspek</th>
-            <th>Jenis Pelanggaran</th>
-            <th>Poin</th>
-        </tr>
-        ';
+
+
+<p>
+
+Tahun Ajaran :
+'.($filters['tahun_ajaran'] ?? 'Semua').'
+
+<br>
+
+Semester :
+'.($filters['semester'] ?? 'Semua').'
+
+</p>
+
+
+
+<table>
+
+
+<tr>
+
+<th>No</th>
+<th>Tanggal</th>
+<th>NIS</th>
+<th>Nama Siswa</th>
+<th>Kelas</th>
+<th>Jenis Pelanggaran</th>
+<th>Poin</th>
+
+</tr>
+
+';
+
+
+
+        if ($rows->count() == 0) {
+
+            $html .= '
+
+<tr>
+
+<td colspan="7">
+
+Tidak ada data pelanggaran
+
+</td>
+
+</tr>';
+
+        }
+
 
 
         foreach ($rows as $i => $row) {
 
             $html .= '
 
-            <tr>
-
-            <td>'.($i+1).'</td>
-
-            <td>'.
-            ($row->tanggal?->format('d-m-Y') ?? '-')
-            .'</td>
+<tr>
 
 
-            <td>'.
-            ($row->siswa?->nis ?? '-')
-            .'</td>
+<td>
+'.($i + 1).'
+</td>
 
 
-            <td>'.
-            ($row->siswa?->nama ?? '-')
-            .'</td>
+<td>
+'.($row->tanggal?->format('d-m-Y') ?? '-').'
+</td>
 
 
-            <td>'.
-            ($row->siswa?->kelas?->nama_kelas ?? '-')
-            .'</td>
+<td>
+'.($row->siswa?->nis ?? '-').'
+</td>
 
 
-            <td>'.
-            ($row->jenisPelanggaran?->aspek_pelanggaran ?? '-')
-            .'</td>
+<td>
+'.($row->siswa?->nama ?? '-').'
+</td>
 
 
-            <td>'.
-            ($row->jenisPelanggaran?->nama_jenis ?? '-')
-            .'</td>
+<td>
+'.($row->siswa?->kelas?->nama_kelas ?? '-').'
+</td>
 
 
-            <td>'.
-            ($row->jenisPelanggaran?->poin ?? 0)
-            .'</td>
+<td>
+'.($row->jenisPelanggaran?->nama_jenis ?? '-').'
+</td>
 
 
-            </tr>';
+<td>
+'.($row->jenisPelanggaran?->poin ?? 0).'
+</td>
+
+
+</tr>';
 
         }
+
 
 
         $html .= '
 
-        </table>
+</table>
 
-        </body>
-        </html>
-        ';
+
+</body>
+
+</html>';
+
 
 
         return $html;
+
     }
 
-
-    private function filterSummary(array $filters): string
-    {
-        $parts = [];
-
-
-        if (!empty($filters['tahun_ajaran'])) {
-            $parts[] =
-                'Tahun Ajaran: ' .
-                $filters['tahun_ajaran'];
-        }
-
-
-        if (!empty($filters['semester'])) {
-            $parts[] =
-                'Semester: ' .
-                $filters['semester'];
-        }
-
-
-        return $parts
-            ? implode(' | ', $parts)
-            : 'Semua Data';
-    }
-
-
-    private function filename(
-        array $filters,
-        string $extension
-    ): string {
-
-        return 'laporan-pelanggaran.'
-            .$extension;
-    }
-
-
-    private function buildExcelXml(
-        Collection $rows,
-        array $filters
-    ): string {
-
-        return '';
-    }
 }

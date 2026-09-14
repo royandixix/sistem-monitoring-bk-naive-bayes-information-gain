@@ -42,7 +42,7 @@ class KlasifikasiStatsOverview extends StatsOverviewWidget
         |--------------------------------------------------------------------------
         */
         $klasifikasiQuery = Klasifikasi::query()
-            ->where('jumlah_pelanggaran', '>', 0);
+            ;
 
         if ($tahunAjaran !== null && $semester !== null) {
             $klasifikasiQuery
